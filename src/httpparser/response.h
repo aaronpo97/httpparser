@@ -13,45 +13,63 @@
 namespace httpparser
 {
 
-struct Response {
-    Response()
-        : versionMajor(0), versionMinor(0), keepAlive(false), statusCode(0)
-    {}
-    
-    struct HeaderItem
+    struct Response
     {
-        std::string name;
-        std::string value;
-    };
-
-    int versionMajor;
-    int versionMinor;
-    std::vector<HeaderItem> headers;
-    std::vector<char> content;
-    bool keepAlive;
-    
-    unsigned int statusCode;
-    std::string status;
-
-    std::string inspect() const
-    {
-        std::stringstream stream;
-        stream << "HTTP/" << versionMajor << "." << versionMinor
-               << " " << statusCode << " " << status << "\n";
-
-        for(std::vector<Response::HeaderItem>::const_iterator it = headers.begin();
-            it != headers.end(); ++it)
+        Response()
+            : versionMajor(0), versionMinor(0), keepAlive(false), statusCode(0)
         {
-            stream << it->name << ": " << it->value << "\n";
         }
 
-        std::string data(content.begin(), content.end());
-        stream << data << "\n";
-        return stream.str();
-    }
-};
+        struct HeaderItem
+        {
+            std::string name;
+            std::string value;
+        };
+
+        int versionMajor;
+        int versionMinor;
+        std::vector<HeaderItem> headers;
+        std::vector<char> content;
+        bool keepAlive;
+
+        unsigned int statusCode;
+        std::string status;
+
+        std::string inspect() const
+        {
+            std::stringstream stream;
+            stream << "HTTP/" << versionMajor << "." << versionMinor
+                   << " " << statusCode << " " << status << "\n";
+
+            for (std::vector<Response::HeaderItem>::const_iterator it = headers.begin();
+                 it != headers.end(); ++it)
+            {
+                stream << it->name << ": " << it->value << "\n";
+            }
+
+            std::string data(content.begin(), content.end());
+            stream << data << "\n";
+            return stream.str();
+        }
+
+        std::string serialize() const
+        {
+            std::stringstream stream;
+            stream << "HTTP/" << versionMajor << "." << versionMinor
+                   << " " << statusCode << " " << status << "\r\n";
+
+            for (std::vector<Response::HeaderItem>::const_iterator it = headers.begin();
+                 it != headers.end(); ++it)
+            {
+                stream << it->name << ": " << it->value << "\r\n";
+            }
+
+            stream << "\r\n";
+            stream.write(content.data(), content.size());
+            return stream.str();
+        }
+    };
 
 } // namespace httpparser
 
 #endif // HTTPPARSER_RESPONSE_H
-
